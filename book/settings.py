@@ -130,3 +130,5 @@ MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR,'book_app/media')
 
 LOGIN_URL = '/login/'
+
+PAGE_ROW_NUM = 10

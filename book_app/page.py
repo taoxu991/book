@@ -17,6 +17,8 @@ def users(request):
 """
 
 from django.utils.safestring import mark_safe
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+
 
 class Pagination(object):
 
@@ -102,14 +104,15 @@ class Pagination(object):
 
         return mark_safe(''.join(page_list))
 
-from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
-class DefaultPagination(Paginator):
 
-    def __init__(self,current_page,base_url,*args,**kwargs):
-        super().__init__(*args,**kwargs)
+class CustomPagination(Paginator):
+
+    def __init__(self, current_page, base_url, *args, **kwargs):
+        super().__init__(*args, **kwargs)
         self.current_page = current_page
         self.base_url = base_url
         self.res_list = None
+        self.html = self.page_html()
 
     def page_html(self):
         """
@@ -121,15 +124,14 @@ class DefaultPagination(Paginator):
         except EmptyPage:
             self.current_page = self.num_pages
             self.res_list = self.page(self.current_page)
-
         except PageNotAnInteger:
             self.res_list = self.page(1)
             self.current_page = 1
 
         if self.res_list.has_previous():
-            prev = '''<li><a href="%s/?page=%s" aria-label="Previous">
+            prev = '''<li><a href="%s?page=%s" aria-label="Previous">
             <span aria-hidden="true">上一页</span></a></li>
-            ''' %(self.base_url,self.res_list.previous_page_number())
+            ''' %(self.base_url, self.res_list.previous_page_number())
         else:
             prev = '''
             <li class="disabled"><a href="#" aria-label="Previous">
@@ -140,19 +142,23 @@ class DefaultPagination(Paginator):
         for num in self.page_range:
             if num == self.current_page:
                 content = '''
-                <li class="item active"><a href="%s/?page=%s">%s</a></li>
-                ''' % (self.base_url,num,num)
+                <li class="item active"><a href="%s?page=%s">%s</a></li>
+                ''' % (self.base_url, num, num)
             else:
                 content = '''
-                <li class="item"><a href="%s/?page=%s">%s</a></li>
+                <li class="item"><a href="%s?page=%s">%s</a></li>
                 ''' % (self.base_url, num, num)
             page_list.append(content)
 
-
-        if self.current_page == self.max_pager_num:
-            nex = ' <li><a href="#">下一页</a></li>'
+        if self.res_list.has_next():
+            has_next = '''<li><a href="%s?page=%s" aria-label="Previous">
+            <span aria-hidden="true">下一页</span></a></li>
+            ''' % (self.base_url, self.res_list.next_page_number())
         else:
-            nex = ' <li><a href="%s?page=%s">下一页</a></li>' % (self.base_url,self.current_page + 1,)
-        page_list.append(nex)
+            has_next = '''
+            <li class="disabled"><a href="#" aria-label="Previous">
+            <span aria-hidden="true">下一页</span></a></li>
+            '''
+        page_list.append(has_next)
 
         return mark_safe(''.join(page_list))

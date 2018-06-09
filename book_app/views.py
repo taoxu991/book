@@ -3,9 +3,11 @@ from django.contrib import auth
 from django.http import JsonResponse
 from book_app.form import *
 from book_app.models import *
-from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from book_app.model_form import *
 from django.contrib.auth.decorators import login_required
+from book_app.page import *
+from book import settings
+from book_app import models as hmodels
 
 
 def get_valid_img(request):
@@ -90,51 +92,24 @@ def register(request):
 
 @login_required
 def book_list(request):
-    current_page = int(request.GET.get("page",1))
+    current_page = int(request.GET.get("page", 1))
     book_all = Book.objects.all().order_by('nid')
-    paginator = Paginator(book_all, 10)
-    try:
-        book_list = paginator.page(current_page)
-    except EmptyPage:
-        current_page = paginator.num_pages
-        book_list = paginator.page(current_page)
-
-    except PageNotAnInteger:
-        book_list = paginator.page(1)
-        current_page = 1
-    return render(request, 'book.html', locals())
+    paginator = CustomPagination(current_page, "/book/", book_all, settings.PAGE_ROW_NUM)
+    return render(request, 'book.html', {'book_list': paginator.res_list, 'page_html': paginator.html})
 
 @login_required
 def publish_list(request):
-    current_page = int(request.GET.get("page",1))
+    current_page = int(request.GET.get("page", 1))
     publish_all = Publish.objects.all().order_by('nid')
-    paginator = Paginator(publish_all, 10)
-    try:
-        publish_list = paginator.page(current_page)
-    except EmptyPage:
-        current_page = paginator.num_pages
-        publish_list = paginator.page(current_page)
-
-    except PageNotAnInteger:
-        publish_list = paginator.page(1)
-        current_page = 1
-    return render(request, 'publish.html', locals())
+    paginator = CustomPagination(current_page, "/publish/", publish_all, settings.PAGE_ROW_NUM)
+    return render(request, 'publish.html', {'publish_list': paginator.res_list, 'page_html': paginator.html})
 
 @login_required
 def author_list(request):
-    current_page = int(request.GET.get("page",1))
+    current_page = int(request.GET.get("page", 1))
     author_all = Author.objects.all().order_by('nid')
-    paginator = Paginator(author_all, 10)
-    try:
-        author_list = paginator.page(current_page)
-    except EmptyPage:
-        current_page = paginator.num_pages
-        author_list = paginator.page(current_page)
-
-    except PageNotAnInteger:
-        author_list = paginator.page(1)
-        current_page = 1
-    return render(request, 'author.html', locals())
+    paginator = CustomPagination(current_page, "/publish/", author_all, settings.PAGE_ROW_NUM)
+    return render(request, 'author.html', {'author_list': paginator.res_list, 'page_html': paginator.html})
 
 @login_required
 def author_add(request):
@@ -145,7 +120,7 @@ def author_add(request):
             return redirect('/author/')
     else:
         model_form = AuthorModelForm()
-        return render(request,'author_add.html',{'model_form':model_form})
+        return render(request, 'author_add.html', {'model_form': model_form})
 
 @login_required
 def book_add(request):
@@ -156,7 +131,7 @@ def book_add(request):
             return redirect('/book/')
     else:
         model_form = BookModelForm()
-        return render(request,'book_add.html',{'model_form':model_form})
+        return render(request, 'book_add.html', {'model_form': model_form})
 
 @login_required
 def publish_add(request):
@@ -167,22 +142,21 @@ def publish_add(request):
             return redirect('/publish/')
     else:
         model_form = PublishModelForm()
-        return render(request,'publish_add.html',{'model_form':model_form})
+        return render(request,'publish_add.html',{'model_form': model_form})
 
 @login_required
-def book_info(request,nid):
+def book_info(request, nid):
     if request.method == 'GET':
         obj = Book.objects.get(nid=nid)
         model_form = BookModelForm(instance=obj)
-
-        return render(request, 'book_info.html', {'model_form': model_form,'obj':obj})
+        return render(request, 'book_info.html', {'model_form': model_form, 'obj': obj})
 
 @login_required
-def book_update(request,nid):
+def book_update(request, nid):
     if request.method == 'GET':
         obj = Book.objects.get(nid=nid)
         model_form = BookModelForm(instance=obj)
-        return render(request, 'book_update.html', {'model_form': model_form,'obj':obj})
+        return render(request, 'book_update.html', {'model_form': model_form, 'obj': obj})
     elif request.method == 'POST':
         obj = Book.objects.filter(nid=nid).first()
         model_form = BookModelForm(request.POST,instance=obj)
@@ -201,33 +175,23 @@ def book_delete(request):
         return JsonResponse(deleteResponse)
 
 @login_required
-def author_info(request,nid):
+def author_info(request, nid):
     if request.method == 'GET':
         obj = Author.objects.get(nid=nid)
-        model_form = AuthorModelForm(instance=obj)
-        current_page = int(request.GET.get("page",1))
+        current_page = int(request.GET.get("page", 1))
         book_all = obj.book_set.all().order_by('nid')
-        paginator = Paginator(book_all, 10)
-        try:
-            book_list = paginator.page(current_page)
-        except EmptyPage:
-            current_page = paginator.num_pages
-            book_list = paginator.page(current_page)
-
-        except PageNotAnInteger:
-            book_list = paginator.page(1)
-            current_page = 1
-        return render(request, 'author_info.html', locals())
+        paginator = CustomPagination(current_page, "/manage/author_info/%s/" % nid, book_all, settings.PAGE_ROW_NUM)
+        return render(request, 'author_info.html', {'obj': obj, 'book_list': paginator.res_list, 'page_html': paginator.html })
 
 @login_required
-def author_update(request,nid):
+def author_update(request, nid):
     if request.method == 'GET':
         obj = Author.objects.get(nid=nid)
         model_form = AuthorModelForm(instance=obj)
-        return render(request, 'author_update.html', {'model_form': model_form,'obj':obj})
+        return render(request, 'author_update.html', {'model_form': model_form, 'obj': obj})
     elif request.method == 'POST':
         obj = Author.objects.filter(nid=nid).first()
-        model_form = AuthorModelForm(request.POST,instance=obj)
+        model_form = AuthorModelForm(request.POST, instance=obj)
         if model_form.is_valid():
             model_form.save()
         return redirect('/manage/author_info/%s' % nid)
@@ -236,41 +200,31 @@ def author_update(request,nid):
 def author_delete(request):
     if request.is_ajax():
         nid = request.POST.get('nid')
-        deleteResponse = {'nid':None}
+        deleteResponse = {'nid': None}
         res = Author.objects.filter(nid=nid).delete()
         if res:
             deleteResponse['nid'] = nid
         return JsonResponse(deleteResponse)
 
 @login_required
-def publish_info(request,nid):
+def publish_info(request, nid):
     if request.method == 'GET':
         obj = Publish.objects.get(nid=nid)
         model_form = PublishModelForm(instance=obj)
-        current_page = int(request.GET.get("page",1))
+        current_page = int(request.GET.get("page", 1))
         book_all = Book.objects.filter(publish=obj).order_by('nid')
-        paginator = Paginator(book_all, 10)
-        try:
-            book_list = paginator.page(current_page)
-        except EmptyPage:
-            current_page = paginator.num_pages
-            book_list = paginator.page(current_page)
-
-        except PageNotAnInteger:
-            book_list = paginator.page(1)
-            current_page = 1
-
-        return render(request, 'publish_info.html', locals())
+        paginator = CustomPagination(current_page, "/manage/publish_info/%s/" % nid, book_all, settings.PAGE_ROW_NUM)
+        return render(request, 'publish_info.html', {'obj': obj, 'book_list': paginator.res_list, 'page_html': paginator.html })
 
 @login_required
-def publish_update(request,nid):
+def publish_update(request, nid):
     if request.method == 'GET':
         obj = Publish.objects.get(nid=nid)
         model_form = PublishModelForm(instance=obj)
         return render(request, 'publish_update.html', {'model_form': model_form,'obj':obj})
     elif request.method == 'POST':
         obj = Publish.objects.filter(nid=nid).first()
-        model_form = PublishModelForm(request.POST,instance=obj)
+        model_form = PublishModelForm(request.POST, instance=obj)
         if model_form.is_valid():
             model_form.save()
         return redirect('/manage/publish_info/%s' % nid)
@@ -279,10 +233,25 @@ def publish_update(request,nid):
 def publish_delete(request):
     if request.is_ajax():
         nid = request.POST.get('nid')
-        deleteResponse = {'nid':None}
+        deleteResponse = {'nid': None}
         res = Publish.objects.filter(nid=nid).delete()
         if res:
             deleteResponse['nid'] = nid
         return JsonResponse(deleteResponse)
+
+
+@login_required
+def list_handle(request, model_type):
+    try:
+        str_model = getattr(hmodels, model_type.capitalize())
+        current_page = int(request.GET.get("page", 1))
+        book_all = str_model.objects.all().order_by('nid')
+        paginator = CustomPagination(current_page, "/%s/" % model_type, book_all, settings.PAGE_ROW_NUM)
+        list_name = '%s_list' % model_type
+        return render(request, '%s.html' % model_type, {list_name: paginator.res_list, 'page_html': paginator.html})
+    except AttributeError:
+        return HttpResponse('404页面')
+
+
 
 

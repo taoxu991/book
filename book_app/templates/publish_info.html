@@ -80,40 +80,7 @@
                 </table>
                 <!---分页-->
                 <ul class="pagination">
-                    {% if book_list.has_previous %}
-                        <li>
-                          <a href="/manage/publish_info/{{ obj.nid }}/?page={{ book_list.previous_page_number }}" aria-label="Previous">
-                            <span aria-hidden="true">上一页</span>
-                          </a>
-                        </li>
-                    {% else %}
-                        <li class="disabled">
-                          <a href="#" aria-label="Previous">
-                            <span aria-hidden="true">上一页</span>
-                          </a>
-                        </li>
-                    {% endif %}
-                    {% for num in paginator.page_range %}
-                        {% if num == current_page %}
-                            <li class="item active"><a href="/manage/publish_info/{{ obj.nid }}/?page={{ num }}">{{ num }}</a></li>
-                        {% else %}
-                            <li class="item"><a href="/manage/publish_info/{{ obj.nid }}/?page={{ num }}">{{ num }}</a></li>
-                        {% endif %}
-                    {% endfor %}
-
-                    {% if book_list.has_next %}
-                        <li>
-                          <a href="/manage/publish_info/{{ obj.nid }}/?page={{ book_list.next_page_number }}" aria-label="Next">
-                            <span aria-hidden="true">下一页</span>
-                          </a>
-                        </li>
-                    {% else %}
-                        <li class="disabled">
-                          <a href="#" aria-label="Next">
-                            <span aria-hidden="true">下一页</span>
-                          </a>
-                        </li>
-                    {% endif %}
+                    {{ page_html }}
                   </ul>
                 <!---分页end---->
             </div>
