@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+
+{% block title %}
+修改图书信息
+{% endblock %}
+
+{% block content %}
+<div class="col-md-3 sidebar">
+    <div class="panel panel-success">
+        <div class="panel-heading">
+            <h3 class="panel-title">{{ obj.title }}</h3>
+        </div>
+        <div class="panel-body">
+            <div class="list-group">
+                <a href="/manage/book_info/{{ obj.nid }}" class="list-group-item">图书信息</a>
+                <a href="/manage/book_update/{{ obj.nid }}" class="list-group-item  active">修改图书信息</a>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="col-md-9">
+    <div class="panel panel-primary">
+        <div class="panel-heading">
+            <h3 class="panel-title">修改图书信息</h3>
+        </div>
+        <div class="panel-body">
+            <form class="form-horizontal" method="post">
+                {% csrf_token %}
+                {{ model_form.as_p }}
+                <button type="submit" value="提交" class="btn btn-default">保存</button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

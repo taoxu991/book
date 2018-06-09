@@ -1,0 +1,135 @@
+{% extends 'base.html' %}
+
+{% block title %}
+作者信息
+{% endblock %}
+
+{% block content %}
+<div class="col-md-3 sidebar">
+    <div class="panel panel-success">
+        <div class="panel-heading">
+            <h3 class="panel-title">{{ obj.name }}</h3>
+        </div>
+        <div class="panel-body">
+            <div class="list-group">
+                <a href="/manage/author_info/{{ obj.nid }}" class="list-group-item active">作者信息</a>
+                <a href="/manage/author_update/{{ obj.nid }}" class="list-group-item">修改作者信息</a>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="col-md-9">
+    <div class="panel panel-primary">
+        <div class="panel-heading">
+            <h3 class="panel-title">作者信息</h3>
+        </div>
+        <div class="panel-body">
+            <form class="form-horizontal" novalidate>
+                <div class="form-group form-group-sm">
+                    <label for="user" class="col-sm-1 control-label">姓名</label>
+                    <div class="col-sm-11">
+                        <input class="form-control" type="text" readonly value="{{ obj.name }}">
+                    </div>
+                </div>
+                <div class="form-group form-group-sm">
+                    <label for="user" class="col-sm-1 control-label">性别</label>
+                    <div class="col-sm-11">
+                        <input class="form-control" type="text" readonly value="{% if obj.sex %}女{% else %}男{% endif %}">
+                    </div>
+                </div>
+                <div class="form-group form-group-sm">
+                    <label for="user" class="col-sm-1 control-label">年龄</label>
+                    <div class="col-sm-11">
+                        <input class="form-control" type="text" readonly value="{{ obj.age }}">
+                    </div>
+                </div>
+                <div class="form-group form-group-sm">
+                    <label for="user" class="col-sm-1 control-label">手机</label>
+                    <div class="col-sm-11">
+                        <input class="form-control" type="text" readonly value="{{ obj.phone }}">
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+    <div class="panel panel-primary">
+        <div class="panel-heading">
+            <h3 class="panel-title">作者书籍</h3>
+        </div>
+        <div class="panel-body">
+            <table class="table table-striped">
+                    <thead>
+                    <tr>
+                        <th>序号</th>
+                        <th>书名</th>
+                        <th>价格</th>
+                        <th>出版日期</th>
+                        <th>出版社</th>
+                        <th>作者</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for book in book_list %}
+                        <tr>
+                        <td>{{ forloop.counter }}</td>
+                        <td><a href="/manage/book_info/{{ book.nid }}" title="点击查看详细信息">{{ book.title }}</a></td>
+                        <td>{{ book.price }}</td>
+                        <td>{{ book.date.isoformat }}</td>
+                        <td><a href="/manage/publish_info/{{ book.publish.nid }}">{{ book.publish }}</a></td>
+                        <td>{% for author in book.authors.all %}
+                                    <a href="/manage/author_info/{{ author.nid }}">
+                                        {% if forloop.first %}{{ author }}{% else %},{{ author }}
+                                        {% endif %}</a>
+                            {% endfor %}
+                        </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="7">没有找到相关信息</td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+                <!---分页-->
+                <ul class="pagination">
+                    {% if book_list.has_previous %}
+                        <li>
+                          <a href="/manage/author_info/{{ obj.nid }}/?page={{ book_list.previous_page_number }}" aria-label="Previous">
+                            <span aria-hidden="true">上一页</span>
+                          </a>
+                        </li>
+                    {% else %}
+                        <li class="disabled">
+                          <a href="#" aria-label="Previous">
+                            <span aria-hidden="true">上一页</span>
+                          </a>
+                        </li>
+                    {% endif %}
+                    {% for num in paginator.page_range %}
+                        {% if num == current_page %}
+                            <li class="item active"><a href="/manage/author_info/{{ obj.nid }}/?page={{ num }}">{{ num }}</a></li>
+                        {% else %}
+                            <li class="item"><a href="/manage/author_info/{{ obj.nid }}/?page={{ num }}">{{ num }}</a></li>
+                        {% endif %}
+                    {% endfor %}
+
+                    {% if book_list.has_next %}
+                        <li>
+                          <a href="/manage/author_info/{{ obj.nid }}/?page={{ book_list.next_page_number }}" aria-label="Next">
+                            <span aria-hidden="true">下一页</span>
+                          </a>
+                        </li>
+                    {% else %}
+                        <li class="disabled">
+                          <a href="#" aria-label="Next">
+                            <span aria-hidden="true">下一页</span>
+                          </a>
+                        </li>
+                    {% endif %}
+                  </ul>
+                <!---分页end---->
+        </div>
+    </div>
+</div>
+{% endblock %}
+

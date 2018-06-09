@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+
+{% block title %}
+图书信息
+{% endblock %}
+
+{% block content %}
+<div class="col-md-3 sidebar">
+    <div class="panel panel-success">
+        <div class="panel-heading">
+            <h3 class="panel-title">{{ obj.title }}</h3>
+        </div>
+        <div class="panel-body">
+            <div class="list-group">
+                <a href="/manage/book_info/{{ obj.nid }}" class="list-group-item active">图书信息</a>
+                <a href="/manage/book_update/{{ obj.nid }}" class="list-group-item">修改图书信息</a>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="col-md-9">
+    <div class="panel panel-primary">
+        <div class="panel-heading">
+            <h3 class="panel-title">图书信息</h3>
+        </div>
+        <div class="panel-body">
+            <form class="form-horizontal" novalidate>
+                <div class="form-group form-group-sm">
+                    <label for="user" class="col-sm-2 control-label">书名</label>
+                    <div class="col-sm-10">
+                        <input class="form-control" type="text" readonly value="{{ obj.title }}">
+                    </div>
+                </div>
+                <div class="form-group form-group-sm">
+                    <label for="user" class="col-sm-2 control-label">价格</label>
+                    <div class="col-sm-10">
+                        <input class="form-control" type="text" readonly value="{{ obj.price }}">
+                    </div>
+                </div>
+                <div class="form-group form-group-sm">
+                    <label for="user" class="col-sm-2 control-label">出版日期</label>
+                    <div class="col-sm-10">
+                        <input class="form-control" type="text" readonly value="{{ obj.date.isoformat }}">
+                    </div>
+                </div>
+                <div class="form-group form-group-sm">
+                    <label for="user" class="col-sm-2 control-label">出版社</label>
+                    <div class="col-sm-10">
+                        <input class="form-control" type="text" readonly value="{{ obj.publish }}">
+                    </div>
+                </div>
+                <div class="form-group form-group-sm">
+                    <label for="user" class="col-sm-2 control-label">作者</label>
+                    <div class="col-sm-10">
+                        <input class="form-control" type="text" readonly value="{% for author in obj.authors.all %}{% if forloop.first %}{{ author.name }}{% else %},{{ author.name }}{% endif %}{% endfor %}">
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

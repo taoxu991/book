@@ -1,0 +1,121 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <div class="col-md-3 sidebar">
+        <div class="panel panel-success">
+            <div class="panel-heading">
+                <h3 class="panel-title">操作</h3>
+            </div>
+            <div class="panel-body">
+                <div class="list-group">
+                    <a href="/book/" class="list-group-item">图书管理</a>
+                    <a href="/publish/" class="list-group-item active">出版社管理</a>
+                    <a href="/author/" class="list-group-item">作者管理</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-9">
+        <div class="panel panel-primary">
+            <div class="panel-heading">
+                <h3 class="panel-title">出版社列表</h3>
+            </div>
+            <div class="panel-body">
+                <table class="table table-striped">
+                    <thead>
+                    <tr>
+                        <th>序号</th>
+                        <th>名称</th>
+                        <th>地址</th>
+                        <th>操作</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for publish in publish_list %}
+                        <tr>
+                        <td>{{ forloop.counter }}</td>
+                        <td><a href="/manage/publish_info/{{ publish.nid }}" title="点击查看详细信息">{{ publish.title }}</a></td>
+                        <td>{{ publish.address }}</td>
+                        <td>
+                            <a href="/manage/publish_info/{{ publish.nid }}"><button class="btn btn-info btn-xs">查看</button></a>
+                            <a href="/manage/publish_update/{{ publish.nid }}"><button class="btn btn-warning btn-xs">修改</button></a>
+                            <button class="btn btn-danger btn-xs delete-btn" bt_value="{{ publish.nid }}">删除</button>
+                        </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="4">没有找到相关信息</td>
+                        </tr>
+                    {% endfor %}
+                        <tr>
+                            <td colspan="4">
+                                <a href="/manage/publish_add/"><button class="btn btn-info">新增</button></a>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+                <!---分页-->
+                <ul class="pagination">
+                    {% if publish_list.has_previous %}
+                        <li>
+                          <a href="/publish/?page={{ publish_list.previous_page_number }}" aria-label="Previous">
+                            <span aria-hidden="true">上一页</span>
+                          </a>
+                        </li>
+                    {% else %}
+                        <li class="disabled">
+                          <a href="#" aria-label="Previous">
+                            <span aria-hidden="true">上一页</span>
+                          </a>
+                        </li>
+                    {% endif %}
+                    {% for num in paginator.page_range %}
+                        {% if num == current_page %}
+                            <li class="item active"><a href="/publish/?page={{ num }}">{{ num }}</a></li>
+                        {% else %}
+                            <li class="item"><a href="/publish/?page={{ num }}">{{ num }}</a></li>
+                        {% endif %}
+                    {% endfor %}
+
+                    {% if publish_list.has_next %}
+                        <li>
+                          <a href="/publish/?page={{ publish_list.next_page_number }}" aria-label="Next">
+                            <span aria-hidden="true">下一页</span>
+                          </a>
+                        </li>
+                    {% else %}
+                        <li class="disabled">
+                          <a href="#" aria-label="Next">
+                            <span aria-hidden="true">下一页</span>
+                          </a>
+                        </li>
+                    {% endif %}
+                  </ul>
+                <!---分页end---->
+            </div>
+        </div>
+    </div>
+
+{% endblock %}
+
+{% block js %}
+    <script>
+    $(function () {
+        $('.delete-btn').click(function () {
+            $.ajax({
+                url:'/manage/publish_delete/',
+                type:'post',
+                headers:{'X-CSRFToken':$.cookie('csrftoken')},
+                data:{
+                    nid:$(this).attr('bt_value')
+                },
+                success:function (data) {
+                    if(data.nid){
+                        $('[bt_value=' + data.nid + ']').parent().parent().remove();
+                    }
+                }
+            });
+        });
+    });
+    </script>
+{% endblock %}
