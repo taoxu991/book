@@ -12,8 +12,8 @@
         </div>
         <div class="panel-body">
             <div class="list-group">
-                <a href="/manage/publish_info/{{ obj.nid }}" class="list-group-item active">出版社信息</a>
-                <a href="/manage/publish_update/{{ obj.nid }}" class="list-group-item">修改出版社信息</a>
+                <a href="/manage/info/publish/{{ obj.nid }}" class="list-group-item active">出版社信息</a>
+                <a href="/manage/update/publish/{{ obj.nid }}" class="list-group-item">修改出版社信息</a>
             </div>
         </div>
     </div>
@@ -60,12 +60,12 @@
                     {% for book in book_list %}
                         <tr>
                         <td>{{ forloop.counter }}</td>
-                        <td><a href="/manage/book_info/{{ book.nid }}" title="点击查看详细信息">{{ book.title }}</a></td>
+                        <td><a href="/manage/info/book/{{ book.nid }}" title="点击查看详细信息">{{ book.title }}</a></td>
                         <td>{{ book.price }}</td>
                         <td>{{ book.date.isoformat }}</td>
-                        <td><a href="/manage/publish_info/{{ book.publish.nid }}">{{ book.publish }}</a></td>
+                        <td>{{ book.publish }}</td>
                         <td>{% for author in book.authors.all %}
-                                    <a href="/manage/author_info/{{ author.nid }}">
+                                    <a href="/manage/info/author/{{ author.nid }}">
                                         {% if forloop.first %}{{ author }}{% else %},{{ author }}
                                         {% endif %}</a>
                             {% endfor %}

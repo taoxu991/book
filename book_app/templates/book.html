@@ -8,9 +8,9 @@
             </div>
             <div class="panel-body">
                 <div class="list-group">
-                    <a href="/book/" class="list-group-item active">图书管理</a>
-                    <a href="/publish/" class="list-group-item">出版社管理</a>
-                    <a href="/author/" class="list-group-item">作者管理</a>
+                    <a href="/manage/list/book/" class="list-group-item active">图书管理</a>
+                    <a href="/manage/list/publish/" class="list-group-item">出版社管理</a>
+                    <a href="/manage/list/author/" class="list-group-item">作者管理</a>
                 </div>
             </div>
         </div>
@@ -37,19 +37,19 @@
                     {% for book in book_list %}
                         <tr>
                         <td>{{ forloop.counter }}</td>
-                        <td><a href="/manage/book_info/{{ book.nid }}" title="点击查看详细信息">{{ book.title }}</a></td>
+                        <td><a href="/manage/info/book/{{ book.nid }}" title="点击查看详细信息">{{ book.title }}</a></td>
                         <td>{{ book.price }}</td>
                         <td>{{ book.date.isoformat }}</td>
-                        <td><a href="/manage/publish_info/{{ book.publish.nid }}">{{ book.publish }}</a></td>
+                        <td><a href="/manage/info/publish/{{ book.publish.nid }}">{{ book.publish }}</a></td>
                         <td>{% for author in book.authors.all %}
-                                    <a href="/manage/author_info/{{ author.nid }}">
+                                    <a href="/manage/info/author/{{ author.nid }}">
                                         {% if forloop.first %}{{ author }}{% else %},{{ author }}
                                         {% endif %}</a>
                             {% endfor %}
                         </td>
                         <td>
-                            <a href="/manage/book_info/{{ book.nid }}"><button class="btn btn-info btn-xs">查看</button></a>
-                            <a href="/manage/book_update/{{ book.nid }}"><button class="btn btn-warning btn-xs">修改</button></a>
+                            <a href="/manage/info/book/{{ book.nid }}"><button class="btn btn-info btn-xs">查看</button></a>
+                            <a href="/manage/update/book/{{ book.nid }}"><button class="btn btn-warning btn-xs">修改</button></a>
                             <button class="btn btn-danger btn-xs delete-btn" bt_value="{{ book.nid }}">删除</button>
                         </td>
                         </tr>
@@ -60,7 +60,7 @@
                     {% endfor %}
                     <tr>
                             <td colspan="7">
-                                <a href="/manage/book_add/"><button class="btn btn-info">新增</button></a>
+                                <a href="/manage/add/book/"><button class="btn btn-info">新增</button></a>
                             </td>
                         </tr>
                     </tbody>
@@ -81,7 +81,7 @@
     $(function () {
         $('.delete-btn').click(function () {
             $.ajax({
-                url:'/manage/book_delete/',
+                url:'/manage/delete/book/',
                 type:'post',
                 headers:{'X-CSRFToken':$.cookie('csrftoken')},
                 data:{

@@ -22,14 +22,11 @@ from book import settings
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
     url(r'^index/', book_views.index),
-    url(r'^book/', book_views.book_list),
-    url(r'^publish/', book_views.publish_list),
-    url(r'^author/', book_views.author_list),
     url(r'^$', book_views.index),
-    url(r'^login/', book_views.log_in,name='login'),
-    url(r'^logout/', book_views.log_out,name='logout'),
-    url(r'^register/', book_views.register,name='register'),
-    url(r'^get_valid_img/', book_views.get_valid_img,name='get_valid_img'),
+    url(r'^login/', book_views.log_in, name='login'),
+    url(r'^logout/', book_views.log_out, name='logout'),
+    url(r'^register/', book_views.register, name='register'),
+    url(r'^get_valid_img/', book_views.get_valid_img, name='get_valid_img'),
     url(r'^manage/', include('book_app.urls')),
 
     # media 配置

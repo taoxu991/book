@@ -2,14 +2,14 @@ from django.shortcuts import render,HttpResponse,redirect
 from django.contrib import auth
 from django.http import JsonResponse
 from book_app.form import *
-from book_app.models import *
-from book_app.model_form import *
 from django.contrib.auth.decorators import login_required
 from book_app.page import *
 from book import settings
 from book_app import models as hmodels
+from book_app import model_form as hmform
 
 
+# 生成动态验证码
 def get_valid_img(request):
     """
     生成动态验证码
@@ -42,13 +42,17 @@ def get_valid_img(request):
     return HttpResponse(data)
 
 def index(request):
-    return redirect('/book/')
+    return redirect('/manage/list/book/')
 
+
+# 登出
 @login_required
 def log_out(request):
     auth.logout(request)
     return redirect('/login/')
 
+
+# 登录
 def log_in(request):
     if request.is_ajax():
         loginForm = LoginForm(request,request.POST)
@@ -65,8 +69,10 @@ def log_in(request):
         return JsonResponse(loginResponse)
     loginForm = LoginForm(request)
     next_url = request.GET.get("next", '/index/')
-    return render(request,'login.html',{'loginForm': loginForm,'next_url':next_url})
+    return render(request, 'login.html', {'loginForm': loginForm,'next_url':next_url})
 
+
+# 管理员注册
 def register(request):
     if request.is_ajax():
         regForm = RegForm(request,request.POST)
@@ -90,167 +96,97 @@ def register(request):
     regForm = RegForm(request)
     return render(request, 'register.html', {'regForm': regForm})
 
+
+# 增加图书、出版社、作者
 @login_required
-def book_list(request):
-    current_page = int(request.GET.get("page", 1))
-    book_all = Book.objects.all().order_by('nid')
-    paginator = CustomPagination(current_page, "/book/", book_all, settings.PAGE_ROW_NUM)
-    return render(request, 'book.html', {'book_list': paginator.res_list, 'page_html': paginator.html})
+def add_handle(request, model_type):
+    try:
+        str_model_form = getattr(hmform, model_type.capitalize() + "ModelForm")
+        if request.method == 'POST':
+            model_form = str_model_form(request.POST)
+            if model_form.is_valid():
+                model_form.save(commit=True)
+                return redirect('/manage/list/%s' % model_type)
+        else:
+            model_form = str_model_form()
+            return render(request, '%s_add.html' % model_type, {'model_form': model_form})
+    except AttributeError:
+        return redirect('/index/')
 
+
+# 查看图书、出版社、作者信息
 @login_required
-def publish_list(request):
-    current_page = int(request.GET.get("page", 1))
-    publish_all = Publish.objects.all().order_by('nid')
-    paginator = CustomPagination(current_page, "/publish/", publish_all, settings.PAGE_ROW_NUM)
-    return render(request, 'publish.html', {'publish_list': paginator.res_list, 'page_html': paginator.html})
+def info_handle(request, model_type, nid):
+    try:
+        str_model = getattr(hmodels, model_type.capitalize())
+        if request.method == 'GET':
+            obj = str_model.objects.get(nid=nid)
+            if model_type != 'book':
+                current_page = int(request.GET.get("page", 1))
+                if model_type == 'author':
+                    book_all = obj.book_set.all().order_by('nid')
+                elif model_type == 'publish':
+                    book_all = hmodels.Book.objects.filter(publish=obj).order_by('nid')
+                paginator = CustomPagination(current_page, '/manage/info/%s/%s' % (model_type, nid), book_all,
+                                             settings.PAGE_ROW_NUM)
+                return render(request, '%s_info.html' % model_type,
+                              {'obj': obj, 'book_list': paginator.res_list, 'page_html': paginator.html})
+            else:
+                model_form = hmform.BookModelForm(instance=obj)
+                return render(request, 'book_info.html', {'model_form': model_form, 'obj': obj})
+    except AttributeError:
+        return redirect('/index/')
 
+
+# 修改图书、出版社、作者
 @login_required
-def author_list(request):
-    current_page = int(request.GET.get("page", 1))
-    author_all = Author.objects.all().order_by('nid')
-    paginator = CustomPagination(current_page, "/publish/", author_all, settings.PAGE_ROW_NUM)
-    return render(request, 'author.html', {'author_list': paginator.res_list, 'page_html': paginator.html})
+def update_handle(request, model_type, nid):
+    try:
+        str_model = getattr(hmodels, model_type.capitalize())
+        str_model_form = getattr(hmform, model_type.capitalize() + "ModelForm")
+        if request.method == 'GET':
+            obj = str_model.objects.get(nid=nid)
+            model_form = str_model_form(instance=obj)
+            return render(request, '%s_update.html' % model_type,
+                          {'model_form': model_form, 'obj': obj})
+        elif request.method == 'POST':
+            obj = str_model.objects.filter(nid=nid).first()
+            model_form = str_model_form(request.POST, instance=obj)
+            if model_form.is_valid():
+                model_form.save()
+            return redirect('/manage/info/%s/%s' % (model_type, nid))
+    except AttributeError:
+        return redirect('/index/')
 
+
+# 删除图书、出版社、作者
 @login_required
-def author_add(request):
-    if request.method == 'POST':
-        model_form = AuthorModelForm(request.POST)
-        if model_form.is_valid():
-            model_form.save(commit=True)
-            return redirect('/author/')
-    else:
-        model_form = AuthorModelForm()
-        return render(request, 'author_add.html', {'model_form': model_form})
-
-@login_required
-def book_add(request):
-    if request.method == 'POST':
-        model_form = BookModelForm(request.POST)
-        if model_form.is_valid():
-            model_form.save(commit=True)
-            return redirect('/book/')
-    else:
-        model_form = BookModelForm()
-        return render(request, 'book_add.html', {'model_form': model_form})
-
-@login_required
-def publish_add(request):
-    if request.method == 'POST':
-        model_form = PublishModelForm(request.POST)
-        if model_form.is_valid():
-            model_form.save(commit=True)
-            return redirect('/publish/')
-    else:
-        model_form = PublishModelForm()
-        return render(request,'publish_add.html',{'model_form': model_form})
-
-@login_required
-def book_info(request, nid):
-    if request.method == 'GET':
-        obj = Book.objects.get(nid=nid)
-        model_form = BookModelForm(instance=obj)
-        return render(request, 'book_info.html', {'model_form': model_form, 'obj': obj})
-
-@login_required
-def book_update(request, nid):
-    if request.method == 'GET':
-        obj = Book.objects.get(nid=nid)
-        model_form = BookModelForm(instance=obj)
-        return render(request, 'book_update.html', {'model_form': model_form, 'obj': obj})
-    elif request.method == 'POST':
-        obj = Book.objects.filter(nid=nid).first()
-        model_form = BookModelForm(request.POST,instance=obj)
-        if model_form.is_valid():
-            model_form.save()
-        return redirect('/manage/book_info/%s' % nid)
-
-@login_required
-def book_delete(request):
-    if request.is_ajax():
-        nid = request.POST.get('nid')
-        deleteResponse = {'nid':None}
-        res = Book.objects.filter(nid=nid).delete()
-        if res:
-            deleteResponse['nid'] = nid
-        return JsonResponse(deleteResponse)
-
-@login_required
-def author_info(request, nid):
-    if request.method == 'GET':
-        obj = Author.objects.get(nid=nid)
-        current_page = int(request.GET.get("page", 1))
-        book_all = obj.book_set.all().order_by('nid')
-        paginator = CustomPagination(current_page, "/manage/author_info/%s/" % nid, book_all, settings.PAGE_ROW_NUM)
-        return render(request, 'author_info.html', {'obj': obj, 'book_list': paginator.res_list, 'page_html': paginator.html })
-
-@login_required
-def author_update(request, nid):
-    if request.method == 'GET':
-        obj = Author.objects.get(nid=nid)
-        model_form = AuthorModelForm(instance=obj)
-        return render(request, 'author_update.html', {'model_form': model_form, 'obj': obj})
-    elif request.method == 'POST':
-        obj = Author.objects.filter(nid=nid).first()
-        model_form = AuthorModelForm(request.POST, instance=obj)
-        if model_form.is_valid():
-            model_form.save()
-        return redirect('/manage/author_info/%s' % nid)
-
-@login_required
-def author_delete(request):
-    if request.is_ajax():
-        nid = request.POST.get('nid')
-        deleteResponse = {'nid': None}
-        res = Author.objects.filter(nid=nid).delete()
-        if res:
-            deleteResponse['nid'] = nid
-        return JsonResponse(deleteResponse)
-
-@login_required
-def publish_info(request, nid):
-    if request.method == 'GET':
-        obj = Publish.objects.get(nid=nid)
-        model_form = PublishModelForm(instance=obj)
-        current_page = int(request.GET.get("page", 1))
-        book_all = Book.objects.filter(publish=obj).order_by('nid')
-        paginator = CustomPagination(current_page, "/manage/publish_info/%s/" % nid, book_all, settings.PAGE_ROW_NUM)
-        return render(request, 'publish_info.html', {'obj': obj, 'book_list': paginator.res_list, 'page_html': paginator.html })
-
-@login_required
-def publish_update(request, nid):
-    if request.method == 'GET':
-        obj = Publish.objects.get(nid=nid)
-        model_form = PublishModelForm(instance=obj)
-        return render(request, 'publish_update.html', {'model_form': model_form,'obj':obj})
-    elif request.method == 'POST':
-        obj = Publish.objects.filter(nid=nid).first()
-        model_form = PublishModelForm(request.POST, instance=obj)
-        if model_form.is_valid():
-            model_form.save()
-        return redirect('/manage/publish_info/%s' % nid)
-
-@login_required
-def publish_delete(request):
-    if request.is_ajax():
-        nid = request.POST.get('nid')
-        deleteResponse = {'nid': None}
-        res = Publish.objects.filter(nid=nid).delete()
-        if res:
-            deleteResponse['nid'] = nid
-        return JsonResponse(deleteResponse)
+def delete_handle(request, model_type):
+    deleteResponse = {'nid': None}
+    try:
+        str_model = getattr(hmodels, model_type.capitalize())
+        if request.is_ajax():
+            nid = request.POST.get('nid')
+            res = str_model.objects.filter(nid=nid).delete()
+            if res:
+                deleteResponse['nid'] = nid
+    except AttributeError:
+        pass
+    return JsonResponse(deleteResponse)
 
 
+# 图书表、出版社表、作者表
 @login_required
 def list_handle(request, model_type):
     try:
         str_model = getattr(hmodels, model_type.capitalize())
         current_page = int(request.GET.get("page", 1))
         book_all = str_model.objects.all().order_by('nid')
-        paginator = CustomPagination(current_page, "/%s/" % model_type, book_all, settings.PAGE_ROW_NUM)
+        paginator = CustomPagination(current_page, "/manage/list/%s/" % model_type, book_all, settings.PAGE_ROW_NUM)
         list_name = '%s_list' % model_type
         return render(request, '%s.html' % model_type, {list_name: paginator.res_list, 'page_html': paginator.html})
     except AttributeError:
-        return HttpResponse('404页面')
+        return redirect('/index/')
 
 
 

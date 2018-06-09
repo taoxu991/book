@@ -8,9 +8,9 @@
             </div>
             <div class="panel-body">
                 <div class="list-group">
-                    <a href="/book/" class="list-group-item">图书管理</a>
-                    <a href="/publish/" class="list-group-item active">出版社管理</a>
-                    <a href="/author/" class="list-group-item">作者管理</a>
+                    <a href="/manage/list/book/" class="list-group-item">图书管理</a>
+                    <a href="/manage/list/publish/" class="list-group-item active">出版社管理</a>
+                    <a href="/manage/list/author/" class="list-group-item">作者管理</a>
                 </div>
             </div>
         </div>
@@ -34,11 +34,11 @@
                     {% for publish in publish_list %}
                         <tr>
                         <td>{{ forloop.counter }}</td>
-                        <td><a href="/manage/publish_info/{{ publish.nid }}" title="点击查看详细信息">{{ publish.title }}</a></td>
+                        <td><a href="/manage/info/publish/{{ publish.nid }}" title="点击查看详细信息">{{ publish.title }}</a></td>
                         <td>{{ publish.address }}</td>
                         <td>
-                            <a href="/manage/publish_info/{{ publish.nid }}"><button class="btn btn-info btn-xs">查看</button></a>
-                            <a href="/manage/publish_update/{{ publish.nid }}"><button class="btn btn-warning btn-xs">修改</button></a>
+                            <a href="/manage/info/publish/{{ publish.nid }}"><button class="btn btn-info btn-xs">查看</button></a>
+                            <a href="/manage/update/publish/{{ publish.nid }}"><button class="btn btn-warning btn-xs">修改</button></a>
                             <button class="btn btn-danger btn-xs delete-btn" bt_value="{{ publish.nid }}">删除</button>
                         </td>
                         </tr>
@@ -49,7 +49,7 @@
                     {% endfor %}
                         <tr>
                             <td colspan="4">
-                                <a href="/manage/publish_add/"><button class="btn btn-info">新增</button></a>
+                                <a href="/manage/add/publish/"><button class="btn btn-info">新增</button></a>
                             </td>
                         </tr>
                     </tbody>
@@ -70,7 +70,7 @@
     $(function () {
         $('.delete-btn').click(function () {
             $.ajax({
-                url:'/manage/publish_delete/',
+                url:'/manage/delete/publish/',
                 type:'post',
                 headers:{'X-CSRFToken':$.cookie('csrftoken')},
                 data:{
