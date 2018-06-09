@@ -90,15 +90,11 @@ def register(request):
 
 @login_required
 def book_list(request):
-    page = request.GET.get("page")
-    if page is None:
-        page = "1"
+    current_page = int(request.GET.get("page",1))
     book_all = Book.objects.all().order_by('nid')
     paginator = Paginator(book_all, 10)
-    if page.isdigit():
-        current_page = int(page)
     try:
-        book_list = paginator.page(page)
+        book_list = paginator.page(current_page)
     except EmptyPage:
         current_page = paginator.num_pages
         book_list = paginator.page(current_page)
@@ -110,15 +106,11 @@ def book_list(request):
 
 @login_required
 def publish_list(request):
-    page = request.GET.get("page")
-    if page is None:
-        page = "1"
+    current_page = int(request.GET.get("page",1))
     publish_all = Publish.objects.all().order_by('nid')
     paginator = Paginator(publish_all, 10)
-    if page.isdigit():
-        current_page = int(page)
     try:
-        publish_list = paginator.page(page)
+        publish_list = paginator.page(current_page)
     except EmptyPage:
         current_page = paginator.num_pages
         publish_list = paginator.page(current_page)
@@ -130,15 +122,11 @@ def publish_list(request):
 
 @login_required
 def author_list(request):
-    page = request.GET.get("page")
-    if page is None:
-        page = "1"
+    current_page = int(request.GET.get("page",1))
     author_all = Author.objects.all().order_by('nid')
     paginator = Paginator(author_all, 10)
-    if page.isdigit():
-        current_page = int(page)
     try:
-        author_list = paginator.page(page)
+        author_list = paginator.page(current_page)
     except EmptyPage:
         current_page = paginator.num_pages
         author_list = paginator.page(current_page)
@@ -206,7 +194,7 @@ def book_update(request,nid):
 def book_delete(request):
     if request.is_ajax():
         nid = request.POST.get('nid')
-        deleteResponse = {'nid':None,'error_msg':''}
+        deleteResponse = {'nid':None}
         res = Book.objects.filter(nid=nid).delete()
         if res:
             deleteResponse['nid'] = nid
@@ -217,15 +205,11 @@ def author_info(request,nid):
     if request.method == 'GET':
         obj = Author.objects.get(nid=nid)
         model_form = AuthorModelForm(instance=obj)
-        page = request.GET.get("page")
-        if page is None:
-            page = "1"
+        current_page = int(request.GET.get("page",1))
         book_all = obj.book_set.all().order_by('nid')
         paginator = Paginator(book_all, 10)
-        if page.isdigit():
-            current_page = int(page)
         try:
-            book_list = paginator.page(page)
+            book_list = paginator.page(current_page)
         except EmptyPage:
             current_page = paginator.num_pages
             book_list = paginator.page(current_page)
@@ -248,10 +232,11 @@ def author_update(request,nid):
             model_form.save()
         return redirect('/manage/author_info/%s' % nid)
 
+@login_required
 def author_delete(request):
     if request.is_ajax():
         nid = request.POST.get('nid')
-        deleteResponse = {'nid':None,'error_msg':''}
+        deleteResponse = {'nid':None}
         res = Author.objects.filter(nid=nid).delete()
         if res:
             deleteResponse['nid'] = nid
@@ -262,16 +247,11 @@ def publish_info(request,nid):
     if request.method == 'GET':
         obj = Publish.objects.get(nid=nid)
         model_form = PublishModelForm(instance=obj)
-
-        page = request.GET.get("page")
-        if page is None:
-            page = "1"
+        current_page = int(request.GET.get("page",1))
         book_all = Book.objects.filter(publish=obj).order_by('nid')
         paginator = Paginator(book_all, 10)
-        if page.isdigit():
-            current_page = int(page)
         try:
-            book_list = paginator.page(page)
+            book_list = paginator.page(current_page)
         except EmptyPage:
             current_page = paginator.num_pages
             book_list = paginator.page(current_page)
@@ -299,7 +279,7 @@ def publish_update(request,nid):
 def publish_delete(request):
     if request.is_ajax():
         nid = request.POST.get('nid')
-        deleteResponse = {'nid':None,'error_msg':''}
+        deleteResponse = {'nid':None}
         res = Publish.objects.filter(nid=nid).delete()
         if res:
             deleteResponse['nid'] = nid

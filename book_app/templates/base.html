@@ -45,7 +45,7 @@
            {% if request.user.is_authenticated %}
             <li><a href="#">当前用户：{{ request.user }}</a></li>
                     <li class="divider"></li>
-                    <li><a href="/accounts/profile/">修改个人信息</a></li>
+                    <li><a href="#">修改个人信息</a></li>
                     <li class="divider"></li>
                     <li><a href="{% url 'logout' %}">登出</a></li>
             {% else %}
