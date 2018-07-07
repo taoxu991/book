@@ -25,7 +25,7 @@ class Book(models.Model):
     title = models.CharField(verbose_name="书名",max_length=32)
     price = models.DecimalField(verbose_name="价格",max_digits=10,decimal_places=2)
     date = models.DateField(verbose_name="出版日期",default="2018-01-20")
-    publish = models.ForeignKey(verbose_name="出版社",to="Publish",to_field="nid")
+    publish = models.ForeignKey(verbose_name="出版社",to="Publish",to_field="nid", on_delete=models.CASCADE)
     authors = models.ManyToManyField("Author")
 
     def __str__(self):
